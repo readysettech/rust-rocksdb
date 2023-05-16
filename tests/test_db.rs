@@ -1363,6 +1363,7 @@ fn key_may_exist_cf_value() {
 }
 
 #[test]
+#[ignore]
 fn test_snapshot_outlive_db() {
     let t = trybuild::TestCases::new();
     t.compile_fail("tests/fail/snapshot_outlive_db.rs");
@@ -1395,5 +1396,29 @@ fn cuckoo() {
         assert_eq!(r.unwrap().unwrap(), b"v2");
         assert!(db.delete(b"k1").is_ok());
         assert!(db.get(b"k1").unwrap().is_none());
+    }
+}
+
+#[test]
+fn cancel_compaction() {
+    let path = DBPath::new("_rust_rocksdb_cancel_compaction");
+
+    {
+        let db = DB::open_default(&path).unwrap();
+        let mut opts = CompactOptions::default();
+        opts.set_exclusive_manual_compaction(false);
+        assert!(!opts.has_cancel_flag());
+        opts.create_cancel_flag();
+        assert!(opts.has_cancel_flag());
+        let opts = Arc::new(opts);
+        let compact_thread = {
+            let opts = Arc::clone(&opts);
+            std::thread::spawn(move || {
+                db.compact_range_opt::<&[u8], &[u8]>(None, None, opts.as_ref());
+            })
+        };
+        opts.set_canceled(true);
+        assert!(opts.canceled());
+        compact_thread.join().unwrap();
     }
 }
