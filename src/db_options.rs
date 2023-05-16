@@ -3858,6 +3858,9 @@ impl Drop for CompactOptions {
     }
 }
 
+unsafe impl Send for CompactOptions {}
+unsafe impl Sync for CompactOptions {}
+
 impl CompactOptions {
     /// If more than one thread calls manual compaction,
     /// only one will actually schedule it while the other threads will simply wait
@@ -3894,6 +3897,26 @@ impl CompactOptions {
         unsafe {
             ffi::rocksdb_compactoptions_set_target_level(self.inner, lvl);
         }
+    }
+
+    pub fn create_cancel_flag(&mut self) {
+        unsafe {
+            ffi::rocksdb_compactoptions_create_canceled_flag(self.inner);
+        }
+    }
+
+    pub fn has_cancel_flag(&self) -> bool {
+        unsafe { ffi::rocksdb_compactoptions_has_canceled_flag(self.inner) != 0 }
+    }
+
+    pub fn set_canceled(&self, val: bool) {
+        unsafe {
+            ffi::rocksdb_compactoptions_set_canceled(self.inner, c_uchar::from(val));
+        }
+    }
+
+    pub fn canceled(&self) -> bool {
+        unsafe { ffi::rocksdb_compactoptions_get_canceled(self.inner) != 0 }
     }
 }
 
