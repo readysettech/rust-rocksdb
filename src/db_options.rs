@@ -3584,10 +3584,9 @@ pub enum ChecksumType {
 
 /// Used by [`PlainTableFactoryOptions`]
 #[repr(u8)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum EncodingType {
     /// Always write full keys without any special encoding.
-    #[default]
     Plain = 0,
     /// Find opportunity to write the same prefix once for multiple rows.
     /// In some cases, when a key follows a previous key with the same prefix,
@@ -3601,6 +3600,12 @@ pub enum EncodingType {
     /// bitwise compared to the prefix extractors stored in the file. An error
     /// will be returned if the two don't match.
     Prefix = 1,
+}
+
+impl Default for EncodingType {
+    fn default() -> Self {
+        Self::Plain
+    }
 }
 
 /// Used with DBOptions::set_plain_table_factory.
