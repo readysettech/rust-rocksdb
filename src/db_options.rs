@@ -2447,9 +2447,9 @@ impl Options {
                 options.hash_table_ratio,
                 options.index_sparseness,
                 options.huge_page_tlb_size,
-                options.encoding_type as i8,
-                options.full_scan_mode as u8,
-                options.store_index_in_file as u8,
+                options.encoding_type as _,
+                options.full_scan_mode as _,
+                options.store_index_in_file as _,
             );
         }
     }
