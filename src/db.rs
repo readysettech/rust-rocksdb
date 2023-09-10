@@ -886,6 +886,14 @@ impl<T: ThreadMode, D: DBInner> DBCommon<T, D> {
         Ok(())
     }
 
+    /// Syncs any already-flushed data to disk.
+    pub fn sync_wal(&self) -> Result<(), Error> {
+        unsafe {
+            ffi_try!(ffi::rocksdb_sync_wal(self.inner.inner()));
+        }
+        Ok(())
+    }
+
     /// Flushes database memtables to SST files on the disk.
     pub fn flush_opt(&self, flushopts: &FlushOptions) -> Result<(), Error> {
         unsafe {
