@@ -886,7 +886,15 @@ impl<T: ThreadMode, D: DBInner> DBCommon<T, D> {
         Ok(())
     }
 
-    /// Syncs any already-flushed data to disk.
+    /// Ensure all WAL writes have been synced to storage, so that (assuming OS
+    /// and hardware support) data will survive power loss. This function does
+    /// not imply flush_wal, so flush_wal(true) is recommended if using
+    /// manual_wal_flush=true. Currently only works if allow_mmap_writes = false
+    /// in Options.
+    ///
+    /// Note that write() followed by sync_wal() is not exactly the same as write()
+    /// with sync=true: in the latter case the changes won't be visible until the
+    /// sync is done.
     pub fn sync_wal(&self) -> Result<(), Error> {
         unsafe {
             ffi_try!(ffi::rocksdb_sync_wal(self.inner.inner()));
